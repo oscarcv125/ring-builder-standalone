@@ -8,6 +8,16 @@ refraction on the centre stone.
 It builds to an **embeddable widget** — a single JS bundle plus one stylesheet —
 designed to drop into a Shopify theme (or any other page).
 
+**Live demo:** https://ring-viewer-app.vercel.app/preview.html
+
+> ### Putting this on a Shopify store?
+> - **Using Claude Code?** Open this repo with it — [`CLAUDE.md`](CLAUDE.md) is
+>   a full runbook it will follow, including the questions it should ask you
+>   first.
+> - **Doing it by hand?** Follow [`SHOPIFY.md`](SHOPIFY.md).
+> - **Want it to actually sell?** See [`CART-INTEGRATION.md`](CART-INTEGRATION.md)
+>   — the configurator is display-only until that work is done.
+
 ## Features
 
 - **Dynamic 3D rendering** — real-time WebGL with physically-based materials
@@ -82,8 +92,12 @@ Display options default to **off** — see [SHOPIFY.md](SHOPIFY.md) for why.
 
 ## Shopify
 
-See **[SHOPIFY.md](SHOPIFY.md)** for the full integration guide.
-`shopify/ring-viewer.liquid` is the ready-to-paste theme section.
+| Document | For |
+|---|---|
+| [`CLAUDE.md`](CLAUDE.md) | Claude Code runbook — questions to ask, procedure, gotchas |
+| [`SHOPIFY.md`](SHOPIFY.md) | Human integration guide: hosting, section install, troubleshooting |
+| [`CART-INTEGRATION.md`](CART-INTEGRATION.md) | Phase 2 — wiring variants and checkout |
+| `shopify/ring-viewer.liquid` | The ready-to-paste theme section |
 
 ## Project layout
 
