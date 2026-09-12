@@ -1,7 +1,7 @@
 # Adding the Ring Viewer to Shopify
 
-The widget is a plain `<script>` plus a `<div>`. Shopify loads it from a URL
-you control, so updating the 3D experience later never means touching the
+The widget is a plain `<script>` plus a `<div>`. Shopify loads it from a
+hosted URL, so updating the 3D experience later never means touching your
 theme again.
 
 > **Using Claude Code for this?** Point it at `CLAUDE.md` in this repo — it
@@ -20,39 +20,29 @@ dist/                     <- this whole folder is what gets hosted
 
 ---
 
-## Quick path
+## Hosting is already handled
 
-If you are happy to load the widget from the existing deployment, the base URL
-is:
+The widget is hosted for you. Your Widget base URL is:
 
 ```
 https://ring-viewer-app.vercel.app
 ```
 
-Skip to [Step 3](#step-3--add-the-section-to-your-theme).
+You do **not** need a Vercel account, and you do **not** need to build or
+deploy anything. Go straight to
+[Step 1 — Add the section](#step-1--add-the-section-to-your-theme).
 
-**But read this first.** That deployment lives on the original developer's
-personal Vercel account. They control whether it stays up, and Vercel's free
-Hobby plan does not permit commercial use. For a real store you should
-[deploy your own copy](#step-2--deploy-your-own-copy) — it takes about five
-minutes.
+Updates to the 3D experience are published by the developer and reach your
+store automatically — the theme keeps pointing at the same URL, so nothing on
+your side changes.
+
+The rest of this document covers installing the section, the available
+settings, and troubleshooting. Self-hosting instructions are in the
+[appendix](#appendix--self-hosting) if you ever want to take it over.
 
 ---
 
-## Step 1 — Build
-
-```bash
-npm install
-```
-
-```bash
-npm run build
-```
-
-This produces `dist/`. Filenames are stable (no content hashes), so the URLs
-you paste into Shopify keep working after every redeploy.
-
-## Step 2 — Deploy your own copy
+## Appendix — self-hosting
 
 `dist/` is a static folder. Any host works, provided it:
 
@@ -121,7 +111,7 @@ Must print `Access-Control-Allow-Origin: *`. Then open
 `https://YOUR-HOST/preview.html` in a browser — if a gold ring renders and
 slowly spins, hosting is correct.
 
-## Step 3 — Add the section to your theme
+## Step 1 — Add the section to your theme
 
 > Duplicate your theme first (**Themes → ⋯ → Duplicate**) and work on the copy,
 > so shoppers do not watch you build.
@@ -134,7 +124,7 @@ slowly spins, hosting is correct.
    contents of `shopify/ring-viewer.liquid` from this repo
 6. **Save**
 
-## Step 4 — Place it on the page
+## Step 2 — Place it on the page
 
 1. Back in **Themes → Customize**
 2. Navigate to the page you want (e.g. a product page)
@@ -151,7 +141,7 @@ applies live without a rebuild.
 
 | Setting | Default | Notes |
 |---|---|---|
-| Widget base URL | — | **Required.** Origin serving `dist/`, no trailing slash |
+| Widget base URL | — | **Required.** `https://ring-viewer-app.vercel.app` — no trailing slash |
 | Heading | blank | Optional section heading |
 | Viewer height | 560px | Canvas height; capped to 70vh on mobile |
 | Maximum width | 1200px | Section content width |
@@ -181,15 +171,18 @@ The host is not sending `Access-Control-Allow-Origin`. The `.glb`/`.hdr` files
 are fetched cross-origin by Three.js and require it.
 
 **Viewer is blank, 404 on a `.glb`**
-`dist/models/` was not deployed, or the base URL has a trailing slash or a
-path on the end. It must be a bare origin.
+Almost always the base URL has a trailing slash or a path on the end — it must
+be a bare origin. If the URL is correct, the host has a problem; contact
+whoever maintains the deployment.
 
 **404 on `draco/…`**
-The `dist/draco/` folder was not deployed. The models are Draco-compressed and
-cannot be decoded without it.
+Same: a host-side problem. The models are Draco-compressed and cannot be
+decoded without that folder.
 
 **Asset URLs return 401 or a login page**
-Vercel Deployment Protection is enabled. Disable it for production.
+Vercel Deployment Protection has been switched on for the deployment. Host-side
+fix: Project Settings → Deployment Protection → allow public production
+access.
 
 **Ring loads but looks flat, no sparkle**
 `dist/env/*.hdr` is missing or blocked. The diamond refraction needs the HDR.
