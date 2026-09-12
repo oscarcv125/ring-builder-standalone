@@ -35,6 +35,11 @@ export default function RingConfigurator({ config }: Props) {
     () => resolveAsset(config.assetBase, config.diamondHdr),
     [config.assetBase, config.diamondHdr],
   );
+  // DRACOLoader requires a trailing slash on the decoder directory.
+  const dracoUrl = useMemo(() => {
+    const p = resolveAsset(config.assetBase, config.dracoPath);
+    return p.endsWith('/') ? p : `${p}/`;
+  }, [config.assetBase, config.dracoPath]);
 
   const title =
     config.title ||
@@ -59,6 +64,7 @@ export default function RingConfigurator({ config }: Props) {
             metalColor={metalColor}
             envHdrUrl={envHdrUrl}
             diamondHdrUrl={diamondHdrUrl}
+            dracoUrl={dracoUrl}
           />
           <p className="rv-hint">Drag to spin &bull; Scroll to zoom</p>
         </div>

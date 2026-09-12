@@ -19,6 +19,8 @@ export interface WidgetConfig {
   models: ModelMap;
   envHdr: string;
   diamondHdr: string;
+  /* Directory holding the self-hosted Draco decoder; models are compressed. */
+  dracoPath: string;
   initialMetal: MetalId;
   initialHalo: boolean;
   initialPave: boolean;
@@ -88,8 +90,9 @@ export function readConfig(el: HTMLElement): WidgetConfig {
       haloPlain: str(d.modelHaloPlain, DEFAULT_MODELS.haloPlain),
       haloPave: str(d.modelHaloPave, DEFAULT_MODELS.haloPave),
     },
-    envHdr: str(d.envHdr, 'env/studio_small_09_2k.hdr'),
+    envHdr: str(d.envHdr, 'env/studio_small_09_1k.hdr'),
     diamondHdr: str(d.diamondHdr, 'env/photo_studio_01_1k.hdr'),
+    dracoPath: str(d.dracoPath, 'draco/'),
     initialMetal: metal(d.initialMetal, 'yellow'),
     initialHalo: bool(d.initialHalo, false),
     initialPave: bool(d.initialPave, false),

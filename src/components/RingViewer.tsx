@@ -1,7 +1,7 @@
 import React, { Suspense, useMemo, useRef, useCallback, useEffect, useState } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows, Center, MeshRefractionMaterial, Bvh, useProgress, useGLTF } from '@react-three/drei';
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
 import * as THREE from 'three';
 
 export interface RingViewerProps {
@@ -9,6 +9,8 @@ export interface RingViewerProps {
   metalColor: string; // 'yellow' | 'white' | 'rose'
   envHdrUrl: string;
   diamondHdrUrl: string;
+  /* Must end in '/'. Models are Draco-compressed. */
+  dracoUrl: string;
 }
 
 interface RingModelProps extends RingViewerProps {
@@ -55,15 +57,15 @@ const getMetalMaterial = (color: string) => {
   });
 };
 
-function RingModel({ modelUrl, metalColor, diamondHdrUrl, interactingRef, isMobile }: RingModelProps) {
-  // Load the glTF model
-  const { scene } = useGLTF(modelUrl);
+function RingModel({ modelUrl, metalColor, diamondHdrUrl, dracoUrl, interactingRef, isMobile }: RingModelProps) {
+  // Load the glTF model (Draco-compressed; decoder is served alongside the assets)
+  const { scene } = useGLTF(modelUrl, dracoUrl);
 
-  // Load the diamond HDR raw (RGBELoader gives us an equirect texture);
+  // Load the diamond HDR raw (HDRLoader gives us an equirect texture);
   // MeshRefractionMaterial samples equirect UVs directly, so we must NOT
   // pass a PMREM-processed texture here or the shader reads pyramid data
   // as pixels and produces speckle noise.
-  const envMap = useLoader(RGBELoader, diamondHdrUrl);
+  const envMap = useLoader(HDRLoader, diamondHdrUrl);
   useMemo(() => {
     envMap.mapping = THREE.EquirectangularReflectionMapping;
   }, [envMap]);
@@ -182,7 +184,7 @@ function RingModel({ modelUrl, metalColor, diamondHdrUrl, interactingRef, isMobi
   );
 }
 
-export default function RingViewer({ modelUrl, metalColor, envHdrUrl, diamondHdrUrl }: RingViewerProps) {
+export default function RingViewer({ modelUrl, metalColor, envHdrUrl, diamondHdrUrl, dracoUrl }: RingViewerProps) {
   const interactingRef = useRef(false);
   const handleStart = useCallback(() => { interactingRef.current = true; }, []);
   const handleEnd = useCallback(() => { interactingRef.current = false; }, []);
@@ -203,6 +205,7 @@ export default function RingViewer({ modelUrl, metalColor, envHdrUrl, diamondHdr
             metalColor={metalColor}
             envHdrUrl={envHdrUrl}
             diamondHdrUrl={diamondHdrUrl}
+            dracoUrl={dracoUrl}
             interactingRef={interactingRef}
             isMobile={isMobile}
           />
