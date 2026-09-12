@@ -4,10 +4,43 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ring-viewer-app</title>
+    <title>Ring Viewer — local preview</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 2rem 1.5rem 4rem;
+        background: #fff;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+        color: #111;
+      }
+      .harness { max-width: 1240px; margin: 0 auto; }
+      .harness-note {
+        max-width: 1240px;
+        margin: 0 auto 1.5rem;
+        font-size: 0.8rem;
+        color: #888;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!--
+      Local harness. This mirrors exactly what the Shopify Liquid section
+      renders, so what you see here is what the storefront gets.
+    -->
+    <p class="harness-note">Local preview — mirrors the Shopify section markup.</p>
+    <div class="harness">
+      <div
+        data-ring-viewer
+        data-asset-base=""
+        data-initial-metal="yellow"
+        data-initial-halo="false"
+        data-initial-pave="false"
+        data-viewer-height="560"
+        data-show-title="true"
+        data-show-price="true"
+        data-show-shapes="true"
+      ></div>
+    </div>
+    <script type="module" src="/src/widget.tsx"></script>
   </body>
 </html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ring Viewer — deployment check</title>
+    <!--
+      Deployment smoke test. Served from the BUILT output only (dist/), so it
+      will 404 under `npm run dev` — that is expected.
+
+      Open https://YOUR-DEPLOYMENT/preview.html after deploying. If the ring
+      renders here, the bundle, the models, the HDR maps and the CORS headers
+      are all correct, and the Shopify section will work.
+    -->
+    <link rel="stylesheet" href="./ring-viewer.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 2rem 1.5rem 4rem;
+        background: #fff;
+        color: #111;
+        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      .wrap { max-width: 1200px; margin: 0 auto; }
+      .note {
+        max-width: 1200px;
+        margin: 0 auto 1.5rem;
+        font-size: 0.8rem;
+        color: #888;
+      }
+    </style>
+  </head>
+  <body>
+    <p class="note">Deployment check — if the ring renders and spins, this build is good to embed.</p>
+    <div class="wrap">
+      <div
+        data-ring-viewer
+        data-asset-base=""
+        data-initial-metal="yellow"
+        data-viewer-height="560"
+        data-show-title="true"
+        data-show-price="true"
+      ></div>
+    </div>
+    <script src="./ring-viewer.js" defer></script>
+  </body>
+</html>

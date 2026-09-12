@@ -4,18 +4,16 @@ import { OrbitControls, Environment, ContactShadows, Center, MeshRefractionMater
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import * as THREE from 'three';
 
-const ENV_HDR_PATH = '/env/studio_small_09_2k.hdr';
-// Separate HDR for the diamond: brighter, more uniform, so the pavilion isn't
-// staring into a dark studio floor when viewed from above.
-const DIAMOND_HDR_PATH = '/env/photo_studio_01_1k.hdr';
-
-interface RingViewerProps {
-  modelPath: string;
+export interface RingViewerProps {
+  modelUrl: string;
   metalColor: string; // 'yellow' | 'white' | 'rose'
+  envHdrUrl: string;
+  diamondHdrUrl: string;
 }
 
 interface RingModelProps extends RingViewerProps {
-  interactingRef: React.MutableRefObject<boolean>;
+  // Plain structural type: stays valid across React 19's ref typing changes.
+  interactingRef: { current: boolean };
   isMobile: boolean;
 }
 
@@ -36,9 +34,9 @@ function Loader() {
   const { progress, active } = useProgress();
   if (!active && progress >= 100) return null;
   return (
-    <div className="viewer-loading">
-      <div className="viewer-loading-spinner" />
-      <div className="viewer-loading-label">Loading {Math.round(progress)}%</div>
+    <div className="rv-loading">
+      <div className="rv-loading-spinner" />
+      <div className="rv-loading-label">Loading {Math.round(progress)}%</div>
     </div>
   );
 }
@@ -57,16 +55,18 @@ const getMetalMaterial = (color: string) => {
   });
 };
 
-function RingModel({ modelPath, metalColor, interactingRef, isMobile }: RingModelProps) {
+function RingModel({ modelUrl, metalColor, diamondHdrUrl, interactingRef, isMobile }: RingModelProps) {
   // Load the glTF model
-  const { scene } = useGLTF(modelPath);
+  const { scene } = useGLTF(modelUrl);
 
   // Load the diamond HDR raw (RGBELoader gives us an equirect texture);
   // MeshRefractionMaterial samples equirect UVs directly, so we must NOT
   // pass a PMREM-processed texture here or the shader reads pyramid data
   // as pixels and produces speckle noise.
-  const envMap = useLoader(RGBELoader, DIAMOND_HDR_PATH);
-  envMap.mapping = THREE.EquirectangularReflectionMapping;
+  const envMap = useLoader(RGBELoader, diamondHdrUrl);
+  useMemo(() => {
+    envMap.mapping = THREE.EquirectangularReflectionMapping;
+  }, [envMap]);
 
   // Calculate scale from the original, unmounted object to prevent world-matrix scaling bugs
   const { scale, sceneMaxDim } = useMemo(() => {
@@ -83,19 +83,23 @@ function RingModel({ modelPath, metalColor, interactingRef, isMobile }: RingMode
     return c;
   }, [scene]);
 
+  // One material instance per metal choice, disposed when it's replaced so
+  // repeated colour switching doesn't leak GPU memory.
+  const metalMaterial = useMemo(() => getMetalMaterial(metalColor), [metalColor]);
+  useEffect(() => () => { metalMaterial.dispose(); }, [metalMaterial]);
+
   // Declaratively render meshes to allow for advanced React-based Shader Materials
   const renderedMeshes = useMemo(() => {
     const elements: React.ReactElement[] = [];
-    const metalMaterial = getMetalMaterial(metalColor);
 
     cloned.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
         const name = (mesh.name || mesh.userData.attributes?.name || '').toLowerCase();
-        
-        const isDiamond = name.includes('pear') || 
-                          name.includes('oval') || 
-                          name.includes('diamond') || 
+
+        const isDiamond = name.includes('pear') ||
+                          name.includes('oval') ||
+                          name.includes('diamond') ||
                           name.includes('gem') ||
                           name.includes('round') ||
                           name.includes('cushion') ||
@@ -157,7 +161,7 @@ function RingModel({ modelPath, metalColor, interactingRef, isMobile }: RingMode
     });
 
     return elements;
-  }, [cloned, metalColor, envMap, isMobile, sceneMaxDim]);
+  }, [cloned, metalMaterial, envMap, isMobile, sceneMaxDim]);
 
   const groupRef = React.useRef<THREE.Group>(null);
 
@@ -178,14 +182,14 @@ function RingModel({ modelPath, metalColor, interactingRef, isMobile }: RingMode
   );
 }
 
-export default function RingViewer({ modelPath, metalColor }: RingViewerProps) {
+export default function RingViewer({ modelUrl, metalColor, envHdrUrl, diamondHdrUrl }: RingViewerProps) {
   const interactingRef = useRef(false);
   const handleStart = useCallback(() => { interactingRef.current = true; }, []);
   const handleEnd = useCallback(() => { interactingRef.current = false; }, []);
   const isMobile = useIsMobile();
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div className="rv-canvas-wrap">
       <Canvas
         camera={{ position: [0, 2, 5], fov: 45 }}
         dpr={[1, isMobile ? 1.5 : 2]}
@@ -194,8 +198,15 @@ export default function RingViewer({ modelPath, metalColor }: RingViewerProps) {
         <directionalLight position={[5, 8, 5]} intensity={0.6} />
 
         <Suspense fallback={null}>
-          <RingModel modelPath={modelPath} metalColor={metalColor} interactingRef={interactingRef} isMobile={isMobile} />
-          <Environment files={ENV_HDR_PATH} background={false} environmentIntensity={1.0} />
+          <RingModel
+            modelUrl={modelUrl}
+            metalColor={metalColor}
+            envHdrUrl={envHdrUrl}
+            diamondHdrUrl={diamondHdrUrl}
+            interactingRef={interactingRef}
+            isMobile={isMobile}
+          />
+          <Environment files={envHdrUrl} background={false} environmentIntensity={1.0} />
           <ContactShadows position={[0, -1.5, 0]} opacity={0.5} scale={10} blur={2} far={4} />
         </Suspense>
 
